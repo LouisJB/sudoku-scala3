@@ -181,7 +181,10 @@ case class SudokuPuzzle(name: String = "", squares: Vector[Vector[Cell]]) extend
     }
   }
 
-  override def toString = squares.map(_.mkString(" ")).mkString("\n")
+  override def toString = if (showProgress && !isSolved)
+    squares.map(_.map(_.toString.padTo(20, ' ')).mkString(" ")).mkString("\n")
+  else
+    squares.map(_.mkString(" ")).mkString("\n")
 }
 object Cell {
   implicit def toSquare(n: Int): Cell = FinalCell(n)
@@ -198,7 +201,7 @@ case class ChoiceCell(numbers: List[Int]) extends Cell {
   def permute: ChoiceCell =
     copy(numbers = numbers.permute)
   def sortedChoices = numbers.sortWith(_ > _)
-  override def toString = "<" + numbers.mkString(", ") + ">"
+  override def toString = "<" + numbers.mkString(",") + ">"
   override def equals(that : Any) = that match {
     case other @ ChoiceCell(n) if (this.sortedChoices == other.sortedChoices) => true
     case _ => false
@@ -228,6 +231,7 @@ object SudokuTest extends App {
     val solution = puzzle.solve
     val totalMs = System.currentTimeMillis() - startMs
     println(s"Puzzle:'${puzzle.name}' solves in ${totalMs}ms as\n${solution._1}")
+    if (showProgress) Thread.sleep(2000)
   }
 
   solve(SudokuPuzzle("p1",
